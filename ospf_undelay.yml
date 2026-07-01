@@ -1,0 +1,83 @@
+---
+- name: Configure OSPF underlay on OmniSwitch fabric
+  hosts: fabric
+  gather_facts: no
+
+  tasks:
+    - name: Configure SPINE-21
+      raw: |
+        ip interface "Loopback0" address 10.99.99.21
+        ip interface "SP21-LF31" address 10.99.1.11 mask 255.255.255.254 vlan 3191 rtr-port port 1/1/1 tagged ifindex 1
+        ip interface "SP21-LF32" address 10.99.1.13 mask 255.255.255.254 vlan 3192 rtr-port port 1/1/2 tagged ifindex 2
+        ip interface "SP21-LF33" address 10.99.1.15 mask 255.255.255.254 vlan 3193 rtr-port port 1/1/3 tagged ifindex 3
+        ip interface "SP21-LF34" address 10.99.1.17 mask 255.255.255.254 vlan 3194 rtr-port port 1/1/4 tagged ifindex 4
+        ip interface "SP21-LF35" address 10.99.1.19 mask 255.255.255.254 vlan 3195 rtr-port port 1/1/5 tagged ifindex 5
+        ip interface "SP21-LF36" address 10.99.1.21 mask 255.255.255.254 vlan 3196 rtr-port port 1/1/6 tagged ifindex 6
+      when: inventory_hostname == "spine-21"
+
+    - name: Configure SPINE-22
+      raw: |
+        ip interface "Loopback0" address 10.99.99.22
+        ip interface "SP22-LF31" address 10.99.2.11 mask 255.255.255.254 vlan 3291 rtr-port port 1/1/1 tagged ifindex 1
+        ip interface "SP22-LF32" address 10.99.2.13 mask 255.255.255.254 vlan 3292 rtr-port port 1/1/2 tagged ifindex 2
+        ip interface "SP22-LF33" address 10.99.2.15 mask 255.255.255.254 vlan 3293 rtr-port port 1/1/3 tagged ifindex 3
+        ip interface "SP22-LF34" address 10.99.2.17 mask 255.255.255.254 vlan 3294 rtr-port port 1/1/4 tagged ifindex 4
+        ip interface "SP22-LF35" address 10.99.2.19 mask 255.255.255.254 vlan 3295 rtr-port port 1/1/5 tagged ifindex 5
+        ip interface "SP22-LF36" address 10.99.2.21 mask 255.255.255.254 vlan 3296 rtr-port port 1/1/6 tagged ifindex 6
+      when: inventory_hostname == "spine-22"
+
+    - name: Configure LEAF-31
+      raw: |
+        ip interface "Loopback0" address 10.99.99.31
+        ip interface "LF31-SP21" address 10.99.1.10 mask 255.255.255.254 vlan 3191 rtr-port port 1/1/1 tagged ifindex 1
+        ip interface "LF31-SP22" address 10.99.2.10 mask 255.255.255.254 vlan 3291 rtr-port port 1/1/2 tagged ifindex 2
+      when: inventory_hostname == "leaf-31"
+
+    - name: Configure LEAF-32
+      raw: |
+        ip interface "Loopback0" address 10.99.99.32
+        ip interface "LF32-SP21" address 10.99.1.12 mask 255.255.255.254 vlan 3192 rtr-port port 1/1/1 tagged ifindex 1
+        ip interface "LF32-SP22" address 10.99.2.12 mask 255.255.255.254 vlan 3292 rtr-port port 1/1/2 tagged ifindex 2
+      when: inventory_hostname == "leaf-32"
+
+    - name: Configure LEAF-33
+      raw: |
+        ip interface "Loopback0" address 10.99.99.33
+        ip interface "LF33-SP21" address 10.99.1.14 mask 255.255.255.254 vlan 3193 rtr-port port 1/1/1 tagged ifindex 1
+        ip interface "LF33-SP22" address 10.99.2.14 mask 255.255.255.254 vlan 3293 rtr-port port 1/1/2 tagged ifindex 2
+      when: inventory_hostname == "leaf-33"
+
+    - name: Configure LEAF-34
+      raw: |
+        ip interface "Loopback0" address 10.99.99.34
+        ip interface "LF34-SP21" address 10.99.1.16 mask 255.255.255.254 vlan 3194 rtr-port port 1/1/1 tagged ifindex 1
+        ip interface "LF34-SP22" address 10.99.2.16 mask 255.255.255.254 vlan 3294 rtr-port port 1/1/2 tagged ifindex 2
+      when: inventory_hostname == "leaf-34"
+
+    - name: Configure LEAF-35
+      raw: |
+        ip interface "Loopback0" address 10.99.99.35
+        ip interface "LF35-SP21" address 10.99.1.18 mask 255.255.255.254 vlan 3195 rtr-port port 1/1/1 tagged ifindex 1
+        ip interface "LF35-SP22" address 10.99.2.18 mask 255.255.255.254 vlan 3295 rtr-port port 1/1/2 tagged ifindex 2
+      when: inventory_hostname == "leaf-35"
+
+    - name: Configure LEAF-36
+      raw: |
+        ip interface "Loopback0" address 10.99.99.36
+        ip interface "LF36-SP21" address 10.99.1.20 mask 255.255.255.254 vlan 3196 rtr-port port 1/1/1 tagged ifindex 1
+        ip interface "LF36-SP22" address 10.99.2.20 mask 255.255.255.254 vlan 3296 rtr-port port 1/1/2 tagged ifindex 2
+      when: inventory_hostname == "leaf-36"
+
+    - name: Configure OSPF common
+      raw: |
+        ip load ospf
+        debug ip ospf set subsecond 1
+        debug ip ospf set bfdsubsecond 1
+        ip ospf area 0.0.0.0
+        ip ospf spf-timer delay 0
+        ip ospf spf-timer hold 0
+        ip ospf bfd-state enable
+        ip ospf admin-state enable
+
+    - name: Save configuration
+      raw: write memory flash-synchro

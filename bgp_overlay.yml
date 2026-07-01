@@ -1,0 +1,98 @@
+---
+- name: Configure BGP EVPN overlay on OmniSwitch fabric
+  hosts: fabric
+  gather_facts: no
+
+  tasks:
+    - name: Configure SPINE route reflector overlay
+      raw: |
+        ip load bgp
+        ip bgp autonomous-system 65000
+        ip bgp client-to-client reflection
+        ip bgp cluster-id 1.1.1.1
+        ip bgp address-family evpn
+        ip bgp bfd-state enable
+
+        ip bgp neighbor 10.99.99.31
+        ip bgp neighbor 10.99.99.31 remote-as 65000
+        ip bgp neighbor 10.99.99.31 route-reflector-client
+        ip bgp neighbor 10.99.99.31 update-source "Loopback0"
+        ip bgp neighbor 10.99.99.31 bfd-state enable
+        ip bgp neighbor 10.99.99.31 activate-evpn
+        ip bgp neighbor 10.99.99.31 admin-state enable
+        ip bgp neighbor 10.99.99.31 ttl-security 0
+
+        ip bgp neighbor 10.99.99.32
+        ip bgp neighbor 10.99.99.32 remote-as 65000
+        ip bgp neighbor 10.99.99.32 route-reflector-client
+        ip bgp neighbor 10.99.99.32 update-source "Loopback0"
+        ip bgp neighbor 10.99.99.32 bfd-state enable
+        ip bgp neighbor 10.99.99.32 activate-evpn
+        ip bgp neighbor 10.99.99.32 admin-state enable
+        ip bgp neighbor 10.99.99.32 ttl-security 0
+
+        ip bgp neighbor 10.99.99.33
+        ip bgp neighbor 10.99.99.33 remote-as 65000
+        ip bgp neighbor 10.99.99.33 route-reflector-client
+        ip bgp neighbor 10.99.99.33 update-source "Loopback0"
+        ip bgp neighbor 10.99.99.33 bfd-state enable
+        ip bgp neighbor 10.99.99.33 activate-evpn
+        ip bgp neighbor 10.99.99.33 admin-state enable
+        ip bgp neighbor 10.99.99.33 ttl-security 0
+
+        ip bgp neighbor 10.99.99.34
+        ip bgp neighbor 10.99.99.34 remote-as 65000
+        ip bgp neighbor 10.99.99.34 route-reflector-client
+        ip bgp neighbor 10.99.99.34 update-source "Loopback0"
+        ip bgp neighbor 10.99.99.34 bfd-state enable
+        ip bgp neighbor 10.99.99.34 activate-evpn
+        ip bgp neighbor 10.99.99.34 admin-state enable
+        ip bgp neighbor 10.99.99.34 ttl-security 0
+
+        ip bgp neighbor 10.99.99.35
+        ip bgp neighbor 10.99.99.35 remote-as 65000
+        ip bgp neighbor 10.99.99.35 route-reflector-client
+        ip bgp neighbor 10.99.99.35 update-source "Loopback0"
+        ip bgp neighbor 10.99.99.35 bfd-state enable
+        ip bgp neighbor 10.99.99.35 activate-evpn
+        ip bgp neighbor 10.99.99.35 admin-state enable
+        ip bgp neighbor 10.99.99.35 ttl-security 0
+
+        ip bgp neighbor 10.99.99.36
+        ip bgp neighbor 10.99.99.36 remote-as 65000
+        ip bgp neighbor 10.99.99.36 route-reflector-client
+        ip bgp neighbor 10.99.99.36 update-source "Loopback0"
+        ip bgp neighbor 10.99.99.36 bfd-state enable
+        ip bgp neighbor 10.99.99.36 activate-evpn
+        ip bgp neighbor 10.99.99.36 admin-state enable
+        ip bgp neighbor 10.99.99.36 ttl-security 0
+
+        ip bgp admin-state enable
+        write memory
+      when: inventory_hostname in groups["spines"]
+
+    - name: Configure LEAF overlay clients
+      raw: |
+        ip load bgp
+        ip bgp autonomous-system 65000
+        ip bgp address-family evpn
+
+        ip bgp neighbor 10.99.99.21
+        ip bgp neighbor 10.99.99.21 remote-as 65000
+        ip bgp neighbor 10.99.99.21 update-source "Loopback0"
+        ip bgp neighbor 10.99.99.21 bfd-state enable
+        ip bgp neighbor 10.99.99.21 activate-evpn
+        ip bgp neighbor 10.99.99.21 admin-state enable
+        ip bgp neighbor 10.99.99.21 ttl-security 0
+
+        ip bgp neighbor 10.99.99.22
+        ip bgp neighbor 10.99.99.22 remote-as 65000
+        ip bgp neighbor 10.99.99.22 update-source "Loopback0"
+        ip bgp neighbor 10.99.99.22 bfd-state enable
+        ip bgp neighbor 10.99.99.22 activate-evpn
+        ip bgp neighbor 10.99.99.22 admin-state enable
+        ip bgp neighbor 10.99.99.22 ttl-security 0
+
+        ip bgp admin-state enable
+        write memory
+      when: inventory_hostname in groups["leafs"]

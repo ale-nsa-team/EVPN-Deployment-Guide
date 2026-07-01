@@ -1,0 +1,43 @@
+all:
+  children:
+
+    spines:
+      hosts:
+
+        spine-21:
+          ansible_host: 10.255.218.21
+
+        spine-22:
+          ansible_host: 10.255.218.22
+
+    leafs:
+      hosts:
+
+        leaf-31:
+          ansible_host: 10.255.218.31
+
+        leaf-32:
+          ansible_host: 10.255.218.32
+
+        leaf-33:
+          ansible_host: 10.255.218.33
+
+        leaf-34:
+          ansible_host: 10.255.218.34
+
+        leaf-35:
+          ansible_host: 10.255.218.35
+
+        leaf-36:
+          ansible_host: 10.255.218.36
+
+    fabric:
+      children:
+        spines:
+        leafs:
+
+  vars:
+    ansible_user: admin
+    ansible_password: 'Alcatel1$'
+    ansible_connection: ssh
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
