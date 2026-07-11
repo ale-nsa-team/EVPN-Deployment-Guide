@@ -595,307 +595,284 @@ Ansible provides a simple, agentless, and scalable method for automating OmniSwi
 The same framework can also be extended for EVPN service provisioning, configuration compliance, backup, validation, software upgrades, and ongoing fabric operations.
 
 
-# OmniSwitch EVPN Fabric Automation using Nornir
+OmniSwitch EVPN Fabric Automation using Nornir
 
-## Overview
+Overview
 
-This repository provides a Python-based network automation framework for deploying and managing an Alcatel-Lucent Enterprise (ALE) OmniSwitch EVPN-VXLAN fabric using **Nornir**.
+This repository provides a Nornir-based automation framework for deploying and validating an Alcatel-Lucent Enterprise (ALE) OmniSwitch EVPN-VXLAN fabric.
 
-The project automates the deployment of the EVPN fabric across multiple spine and leaf switches using SSH, reducing manual configuration effort while ensuring consistent and repeatable deployments.
+Nornir is a Python automation framework designed for network engineers. It provides fast parallel execution and seamless integration with Netmiko, making it well suited for configuring and validating OmniSwitch devices over SSH.
 
-The automation framework supports:
+This project automates:
 
-- Underlay OSPF deployment
-- BGP EVPN overlay deployment
-- Configuration backup
-- Operational verification
-- Bulk configuration changes
-- Multi-device parallel execution
+OSPF Underlay deployment
+BGP EVPN Overlay deployment
+Configuration deployment
+Configuration backup
+Fabric verification
+Operational validation
+Network Topology
+Device	Management IP	Role
+SPINE-21	10.255.218.21	Route Reflector
+SPINE-22	10.255.218.22	Route Reflector
+LEAF-31	10.255.218.31	Leaf
+LEAF-32	10.255.218.32	Leaf
+LEAF-33	10.255.218.33	Leaf
+LEAF-34	10.255.218.34	Leaf
+LEAF-35	10.255.218.35	Leaf
+LEAF-36	10.255.218.36	Leaf
+Software Versions
+Component	Version
+Ubuntu	26.xx
+Python	3.x
+Nornir	Latest
+Netmiko	Latest
+OmniSwitch	AOS 8.10.86.R04
+Features
+SSH-based automation
+Parallel execution
+Underlay deployment
+Overlay deployment
+Configuration verification
+Configuration backup
+Multi-device execution
+Easy inventory management
+Installation
+Step 1 – Install Python
+sudo apt update
+sudo apt install python3 python3-pip python3-venv -y
+Step 2 – Create Virtual Environment
+python3 -m venv ~/ansible-env
 
----
+Activate the environment:
 
-# Fabric Topology
+source ~/ansible-env/bin/activate
 
-```
-                +----------------+
-                |   SPINE-21     |
-                | 10.99.99.21    |
-                +----------------+
-                    |    |    |
-        -------------------------------
-       /       /       |        \      \
-      /       /        |         \      \
+Verify:
 
-+-----------+  +-----------+  +-----------+
-| LEAF-31   |  | LEAF-32   |  | LEAF-33   |
-|10.99.99.31|  |10.99.99.32|  |10.99.99.33|
-+-----------+  +-----------+  +-----------+
+which python
 
-+-----------+  +-----------+  +-----------+
-| LEAF-34   |  | LEAF-35   |  | LEAF-36   |
-|10.99.99.34|  |10.99.99.35|  |10.99.99.36|
-+-----------+  +-----------+  +-----------+
+Expected output:
 
-                +----------------+
-                |   SPINE-22     |
-                | 10.99.99.22    |
-                +----------------+
-```
-
----
-
-# Features
-
-- Agentless automation
-- Parallel deployment
-- SSH-based configuration
-- Configuration verification
-- Backup automation
-- Multi-device execution
-- Reusable playbooks
-- Simple inventory management
-
----
-
-# Repository Structure
-
-```
-.
-├── config.yaml
-├── deploy.py
-├── verify.py
-├── inventory
-│   ├── hosts.yaml
-│   ├── groups.yaml
-│   └── defaults.yaml
-│
-├── configs
-│   ├── spine-21.cfg
-│   ├── spine-22.cfg
-│   ├── leaf-31.cfg
-│   ├── leaf-32.cfg
-│   ├── leaf-33.cfg
-│   ├── leaf-34.cfg
-│   ├── leaf-35.cfg
-│   └── leaf-36.cfg
-│
-└── README.md
-```
-
----
-
-# Requirements
-
-- Ubuntu 22.04 / 24.04 / 26.xx
-- Python 3.10+
-- Nornir
-- Netmiko
-- SSH connectivity to all switches
-
----
-
-# Installation
-
-Create a virtual environment.
-
-```bash
-python3 -m venv ansible-env
-source ansible-env/bin/activate
-```
-
-Install dependencies.
-
-```bash
+/root/ansible-env/bin/python
+Step 3 – Upgrade pip
+pip install --upgrade pip
+Step 4 – Install Nornir
 pip install nornir
 pip install nornir-netmiko
 pip install nornir-utils
 pip install netmiko
-```
 
----
+Verify installation:
 
-# Inventory
+pip list
+Repository Structure
+nornir-evpn/
 
-Device inventory is maintained in
+│
+├── config.yaml
+├── deploy.py
+├── verify.py
+├── nornir.log
+│
+├── inventory/
+│   ├── hosts.yaml
+│   ├── groups.yaml
+│   └── defaults.yaml
+│
+└── configs/
+    ├── spine-21.cfg
+    ├── spine-22.cfg
+    ├── leaf-31.cfg
+    ├── leaf-32.cfg
+    ├── leaf-33.cfg
+    ├── leaf-34.cfg
+    ├── leaf-35.cfg
+    └── leaf-36.cfg
+Inventory
+hosts.yaml
 
-```
-inventory/hosts.yaml
-```
+Contains all managed devices.
 
-Example
+Example:
 
-```yaml
 spine-21:
   hostname: 10.255.218.21
 
 leaf-31:
   hostname: 10.255.218.31
-```
+groups.yaml
 
-Authentication credentials are stored in
+Contains authentication information.
 
-```
-inventory/groups.yaml
-```
+Example:
 
----
+omniswitch:
+  username: admin
+  password: "********"
 
-# Configuration Files
+  connection_options:
+    netmiko:
+      extras:
+        device_type: alcatel_aos
+defaults.yaml
+
+This file can remain empty unless common parameters are required.
+
+inventory/
+    defaults.yaml
+Configuration Files
 
 Each switch has its own configuration file.
 
-```
 configs/
-```
 
-Example
+spine-21.cfg
+spine-22.cfg
+leaf-31.cfg
+leaf-32.cfg
+leaf-33.cfg
+leaf-34.cfg
+leaf-35.cfg
+leaf-36.cfg
 
-```
-configs/spine-21.cfg
-configs/spine-22.cfg
-configs/leaf-31.cfg
-```
+The configuration filename must match the hostname defined in hosts.yaml.
 
-The filename **must match** the inventory hostname.
+Deploy Configuration
 
----
+Run:
 
-# Deploy Configuration
-
-Deploy the EVPN fabric.
-
-```bash
 python deploy.py
-```
 
-Nornir automatically
+Nornir will:
 
-- Connects to all switches
-- Pushes the corresponding configuration
-- Executes in parallel
-- Displays deployment results
+Read the inventory
+Connect to each switch via SSH
+Load the matching configuration file
+Deploy the configuration
+Display deployment results
+Verify Fabric
 
----
+Run:
 
-# Verify Fabric
-
-Run
-
-```bash
 python verify.py
-```
 
-Example verification commands
+The verification script executes the following commands on every switch:
 
-```
 show ip ospf neighbor
 
-show ip bgp summary
+show ip bgp neighbor
 
-show ip bgp evpn summary
+show service evpn ethernet-segment
+Example Output
+spine-21
+------------
+show ip ospf neighbor
 
-show configuration snapshot bgp
-```
+Neighbor ID        State
+10.99.99.31        Full
+10.99.99.32        Full
 
----
+----------------------------
 
-# Automation Workflow
+show ip bgp neighbor
 
-```
-Inventory
+Neighbor
+10.99.99.31
+Established
 
-      │
+----------------------------
 
-      ▼
+show service evpn ethernet-segment
 
-Configuration Files
+Operational State : Up
+Deployment Workflow
+Install Python
 
-      │
+↓
 
-      ▼
+Create Virtual Environment
 
-Deploy.py
+↓
 
-      │
+Install Nornir
 
-      ▼
+↓
 
-Parallel SSH Deployment
+Configure Inventory
 
-      │
+↓
 
-      ▼
+Copy Device Configurations
 
-Fabric Verification
-```
+↓
 
----
+Run deploy.py
 
-# Supported EVPN Components
+↓
 
-The automation framework supports deployment of:
+Verify Fabric
 
-- OSPF Underlay
-- Loopback Interfaces
-- Point-to-Point Links
-- BGP EVPN Overlay
-- Route Reflectors
-- VXLAN
-- VTEP Interfaces
-- VLANs
-- VRFs
-- Anycast Gateway
-- Tenant Services
+↓
 
----
+Operational Validation
+Benefits
 
-# Advantages of Nornir
+Using Nornir provides:
 
-- Python native automation
-- Highly scalable
-- Fast parallel execution
-- Easily customizable
-- Ideal for large EVPN fabrics
-- Integrates with Netmiko, NAPALM, Scrapli, REST APIs and Python libraries
+Fast parallel execution
+Python-native automation
+Easy integration with Netmiko
+Scalable deployment
+Configuration consistency
+Simplified operations
+Automated verification
+Reduced deployment time
+Troubleshooting
+Verify SSH
+ssh admin@10.255.218.21
+Verify Inventory
+python
+>>> from nornir import InitNornir
+>>> nr = InitNornir(config_file="config.yaml")
+>>> print(nr.inventory.hosts)
+Verify Python Environment
+which python
 
----
+Expected:
 
-# Future Enhancements
+/root/ansible-env/bin/python
+Verify Installed Packages
+pip list
+Check Connectivity
 
-- Configuration compliance checks
-- Automated rollback
-- Zero Touch Provisioning (ZTP)
-- Firmware upgrade automation
-- Configuration backup scheduling
-- Health monitoring
-- CI/CD integration
-- Git version control
-- Dynamic inventory
-- Automated EVPN validation
+Create a simple test script:
 
----
+python test_connection.py
 
-# Tested Platform
+Expected output:
 
-Platform
+show microcode working
 
-```
-Alcatel-Lucent Enterprise OmniSwitch
-```
+Uosn.img
 
-Software
+8.10.86.R04
+Future Enhancements
+Configuration backup
+Compliance validation
+Configuration rollback
+Software upgrades
+Health monitoring
+Dynamic inventory
+GitHub Actions / CI-CD integration
+Zero Touch Provisioning (ZTP)
+EVPN service provisioning
+VXLAN VNI automation
+License
 
-```
-AOS 8.10.86.R04
-```
+This project is intended as a reference implementation for automating OmniSwitch EVPN fabric deployments using Nornir. Always validate configuration changes in a lab environment before applying them to production networks.
 
-Automation Framework
-
-```
-Nornir 3.x
-Netmiko
-Python 3.x
-```
+I also recommend adding network topology diagrams, sample configuration files, and deployment screenshots to the repository. Those additions make the project much more useful for engineers who want to understand or reuse your automation.
 
 ---
 
